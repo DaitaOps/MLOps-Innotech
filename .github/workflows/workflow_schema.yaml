@@ -1,0 +1,58 @@
+name: Test code and app
+on: 
+  # - workflow_dispatch
+  # - push
+
+jobs:
+  test_and_deploy_model:
+    name: Test processed code and deploy model
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        run: 
+
+      - name: Configuración del entorno
+        run: 
+
+      - name: Instalación de paquetes
+        run:
+
+      - name: Entrenamiento del modelo
+        run:
+
+      - name: Testeo del código procesado y modelo ML
+        run: 
+
+      - name: Creación local del servicio y testeo
+        run: 
+
+      - name: Aprobación manual del Workflow
+        run: 
+          
+      - name: Configuración de credenciales AWS
+        run: 
+
+      - name: Amazon ECR "Login" Action para GitHub Actions
+        run: 
+
+      #### Deploy API container ####
+      - name: Build API Docker Image
+        run: 
+
+      - name: Tag API Docker Image
+        run: 
+
+      - name: Push API Docker Image a ECR
+        run: 
+
+      #### Deploy UI container ####
+      - name: Build UI Docker Image
+        run: 
+
+      - name: Tag UI Docker Image
+        run: 
+
+      - name: Push UI Docker Image a ECR
+        run: 
+
+

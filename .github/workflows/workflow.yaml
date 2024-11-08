@@ -2,70 +2,64 @@ name: Test code and app
 on: 
   - workflow_dispatch
   - push
-#   pull_request:
-#     paths:
-#       - src/**
-#       - config/**
-#       - training/**
-# #      - application/**
-#       - .github/workflows/test_training.yaml
+
 jobs:
-  test_model:
-    name: Test processed code and model
+  test_and_deploy_model:
+    name: Test processed code and deploy model
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v2
 
-      - name: Environment setup
+      - name: Configuración del entorno
         uses: actions/setup-python@v2
         with:
           python-version: 3.10.10
           cache: pip
 
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+      # - name: Cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.cache/pip
+      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
+      #     restore-keys: ${{ runner.os }}-pip-
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1
-
-      - name: Install packages
+      - name: Instalación de paquetes
         run: pip install -r dev-requirements.txt
 
-      - name: Train model
+      - name: Entrenamiento del modelo
         run: python ./training/src/main.py
 
-      - name: Test processed code and ML model
+      - name: Testeo del código procesado y modelo ML
         run: pytest training/tests
 
-      - name: Serve the app locally and run app tests
+      - name: Creación local del servicio y testeo
         run: |
           python ./application/src/create_service.py &
           sleep 10
           pytest application/tests
 
-      - name: Manual Workflow Approval
+      - name: Aprobación manual del Workflow
         uses: trstringer/manual-approval@v1.9.1
         with:
           secret: ${{ secrets.APPROVE_TOKEN }}
-          approvers: DaitaOps
+          approvers: ${{ github.actor }}
           minimum-approvals: 1
           issue-title: "Checking training metrics and tests"
           issue-body: "Please check the obtained scores and approve accordingly"
           exclude-workflow-initiator-as-approver: false
           additional-approved-words: ''
           additional-denied-words: ''
+          
+      - name: Configuración de credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
 
-      - name: Amazon ECR "Login" Action for GitHub Actions
+      - name: Amazon ECR "Login" Action para GitHub Actions
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2.0.1
 
@@ -76,7 +70,7 @@ jobs:
       - name: Tag API Docker Image
         run: docker tag my-test-api:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
 
-      - name: Push API Docker Image to ECR
+      - name: Push API Docker Image a ECR
         run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
 
       #### Deploy UI container ####
@@ -86,7 +80,5 @@ jobs:
       - name: Tag UI Docker Image
         run: docker tag my-test-ui:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
 
-      - name: Push UI Docker Image to ECR
+      - name: Push UI Docker Image a ECR
         run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
-
-
