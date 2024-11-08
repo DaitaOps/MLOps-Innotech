@@ -53,4 +53,40 @@ jobs:
           sleep 10
           pytest application/tests
 
+      - name: Manual Workflow Approval
+        uses: trstringer/manual-approval@v1.9.1
+        with:
+          secret: ${{ secrets.APPROVE_TOKEN }}
+          approvers: DaitaOps
+          minimum-approvals: 1
+          issue-title: "Checking training metrics and tests"
+          issue-body: "Please check the obtained scores and approve accordingly"
+          exclude-workflow-initiator-as-approver: false
+          additional-approved-words: ''
+          additional-denied-words: ''
+
+      - name: Amazon ECR "Login" Action for GitHub Actions
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2.0.1
+
+      #### Deploy API container ####
+      - name: Build API Docker Image
+        run: docker build -t my-test-api -f Dockerfile.api .
+
+      - name: Tag API Docker Image
+        run: docker tag my-test-api:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
+
+      - name: Push API Docker Image to ECR
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
+
+      #### Deploy UI container ####
+      - name: Build UI Docker Image
+        run: docker build -t my-test-ui -f Dockerfile.ui .
+
+      - name: Tag UI Docker Image
+        run: docker tag my-test-ui:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
+
+      - name: Push UI Docker Image to ECR
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
+
 
