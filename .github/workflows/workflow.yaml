@@ -18,13 +18,6 @@ jobs:
           python-version: 3.10.10
           cache: pip
 
-      # - name: Cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.cache/pip
-      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
-      #     restore-keys: ${{ runner.os }}-pip-
-
       - name: Instalación de paquetes
         run: pip install -r dev-requirements.txt
 
@@ -68,17 +61,17 @@ jobs:
         run: docker build -t my-test-api -f Dockerfile.api .
 
       - name: Tag API Docker Image
-        run: docker tag my-test-api:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
+        run: docker tag my-test-api:${{ vars.TEAM_NAME }} ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:${{ vars.TEAM_NAME }}
 
       - name: Push API Docker Image a ECR
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-api:${{ vars.TEAM_NAME }}
 
       #### Deploy UI container ####
       - name: Build UI Docker Image
         run: docker build -t my-test-ui -f Dockerfile.ui .
 
       - name: Tag UI Docker Image
-        run: docker tag my-test-ui:latest ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
+        run: docker tag my-test-ui:${{ vars.TEAM_NAME }} ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:${{ vars.TEAM_NAME }}
 
       - name: Push UI Docker Image a ECR
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/mlops-innotech-ui:${{ vars.TEAM_NAME }}
