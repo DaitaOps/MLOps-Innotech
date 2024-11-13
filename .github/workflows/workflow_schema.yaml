@@ -1,7 +1,7 @@
 name: Test code and app
 on: 
-  # - workflow_dispatch
-  # - push
+  - workflow_dispatch
+  - push
 
 jobs:
   test_and_deploy_model:
